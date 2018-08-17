@@ -1,11 +1,16 @@
 {
-    "presets": [
-        [
-            "env",
-            {
-                "modules": false
-            }
-        ]
-    ],
-    "plugins": ["transform-runtime", "transform-object-rest-spread"]
+  "presets": [
+    [
+      "env",
+      {
+        "modules": false,
+        "targets": {
+          "browsers": ["defaults"],
+          "node": "current"
+        },
+        "exclude": ["transform-regenerator"]
+      }
+    ]
+  ],
+  "plugins": ["fast-async", "external-helpers", "transform-object-rest-spread"]
 }

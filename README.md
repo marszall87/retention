@@ -22,6 +22,16 @@ import { buildMatrix, renderTable, renderChart } from 'retention';
 const { buildMatrix, renderTable, renderChart } = require('retention');
 ```
 
+_Notice:_ Because CJS modules are almost always used in NodeJS backend code (Webpack or Rollup should automatically use UMD or ESM version), this version includes only `buildMatrix` function, no rendering functions. If you want those you should probably explicitly include the UMD version:
+
+```js
+const {
+  buildMatrix,
+  renderTable,
+  renderChart
+} = require('retention/dist/retention.umd.js');
+```
+
 #### Browser
 
 ```html

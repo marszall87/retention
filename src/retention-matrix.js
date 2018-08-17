@@ -126,7 +126,7 @@ const buildRetentionMatrix = ({ ranges, weeklyActivity, evaluations }) => {
   });
 };
 
-export default async ({
+export const buildMatrix = async ({
   startingDate = endOfDay(Date.now()),
   numberOfWeeks,
   getInitialEvents,
