@@ -1,6 +1,6 @@
 {
   "name": "retention",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Build retention matrix, render table or chart with data",
   "main": "dist/retention.js",
   "source": "src/index.js",
