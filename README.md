@@ -1,6 +1,6 @@
 # Retention - build retention matrix, render table or chart with data
 
-![Screenshot](screenshot.png)
+![Screenshot](https://raw.githubusercontent.com/marszall87/retention/master/screenshot.png)
 
 ## Installation
 
