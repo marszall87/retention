@@ -14,6 +14,10 @@
   },
   "author": "Michał",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marszall87/retention.git"
+  },
   "dependencies": {
     "hyperhtml": "^2.13.0",
     "ordinal": "^1.0.2"
