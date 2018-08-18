@@ -36,7 +36,7 @@ const umdAndEsmConfig = ({ minify }) => ({
       file: `dist/retention.umd${minify ? '.min' : ''}.js`,
       format: 'umd',
       name: 'Retention',
-      sourcemap: minify,
+      sourcemap: true,
       globals: {
         c3: 'c3'
       }
@@ -44,7 +44,7 @@ const umdAndEsmConfig = ({ minify }) => ({
     {
       file: `dist/retention.esm${minify ? '.min' : ''}.js`,
       format: 'esm',
-      sourcemap: minify,
+      sourcemap: true,
       globals: {
         c3: 'c3'
       }
@@ -66,8 +66,8 @@ const cjsConfig = ({ minify }) => ({
   ...defaultConfig({ minify })
 });
 
-export default [
-  umdAndEsmConfig({ minify: true }),
-  umdAndEsmConfig({ minify: false }),
-  cjsConfig({ minify: false })
-];
+const config = dev
+  ? umdAndEsmConfig({ minify: false })
+  : [umdAndEsmConfig({ minify: false }), umdAndEsmConfig({ minify: true }), cjsConfig({ minify: false })];
+
+export default config;

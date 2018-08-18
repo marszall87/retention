@@ -1,15 +1,21 @@
-import {
-  subWeeks,
-  addWeeks,
-  isAfter,
-  endOfDay,
-  addMilliseconds
-} from 'date-fns';
+const millisecondsPerDay = 24 * 60 * 60 * 1000;
 
-const generateRanges = (startingDate, count) =>
-  Array.from({ length: count }, (v, i) => {
-    const from = addMilliseconds(subWeeks(startingDate, count - i), 1);
-    const to = subWeeks(startingDate, count - i - 1);
+const subDays = (date, days) => new Date(date.getTime() - days * millisecondsPerDay);
+
+const addMilliseconds = (date, millis) => new Date(date.getTime() + millis);
+
+const isAfter = (a, b) => Date.parse(a) > Date.parse(b);
+
+const endOfDay = date => {
+  const endOfDay = new Date(date);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+  return endOfDay;
+};
+
+export const generateRanges = ({ endingDate = endOfDay(Date.now()), daysInRange = 7, rangeCount = 4 }) =>
+  Array.from({ length: rangeCount }, (v, i) => {
+    const from = addMilliseconds(subDays(endingDate, daysInRange * (rangeCount - i)), 1);
+    const to = subDays(endingDate, daysInRange * (rangeCount - i - 1));
     return {
       from,
       to
@@ -22,28 +28,20 @@ const getWeekIndex = (date, weeks) => {
   });
 };
 
-const groupEvaluationsByWeek = (evaluations, weeks) => {
-  return evaluations.reduce((grouped, evaluation) => {
-    const weekIndex = getWeekIndex(evaluation.date, weeks);
-    if (weekIndex < 0) {
-      return grouped;
+const groupInitialEventsByWeek = (initalEvents, ranges) => {
+  const grouped = ranges.map(w => new Map());
+  initalEvents.forEach(initialEvent => {
+    const rangeIndex = getWeekIndex(initialEvent.date, ranges);
+    if (rangeIndex < 0) {
+      return;
     }
-    return [
-      ...grouped.slice(0, weekIndex),
-      {
-        ...grouped[weekIndex],
-        [evaluation.id]: evaluation.date
-      },
-      ...grouped.slice(weekIndex + 1)
-    ];
-  }, weeks.map(w => ({})));
+    grouped[rangeIndex].set(initialEvent.id, initialEvent.date);
+  });
+  return grouped;
 };
 
-// const timeframeFormat = date => date.toISOString();
-
 const getActiveInstances = async (getActivity, from, to, weekIndex) => {
-  const functions =
-    typeof getActivity === 'object' ? getActivity : { activity: getActivity };
+  const functions = typeof getActivity === 'object' ? getActivity : { activity: getActivity };
   const all = await Promise.all(
     Object.keys(functions).map(async name => {
       const f = functions[name];
@@ -55,87 +53,80 @@ const getActiveInstances = async (getActivity, from, to, weekIndex) => {
     })
   );
 
-  const activity = all.reduce((a, activityResults) => {
-    const name = activityResults.name;
-    return activityResults.results.reduce(
-      (obj, instance) => ({
-        ...obj,
-        [instance]: [...(obj[instance] || []), name]
-      }),
-      a
-    );
-  }, {});
+  const activity = new Map();
 
+  all.forEach(activityResults => {
+    const name = activityResults.name;
+    activityResults.results.forEach(instance => {
+      if (activity.has(instance)) {
+        activity.get(instance).push(name);
+      } else {
+        activity.set(instance, [name]);
+      }
+    });
+  });
   return activity;
 };
 
-const getWeeklyActivity = async (getActivity, weeks) => {
-  const weeklyActivity = [];
-  for (let weekIndex in weeks) {
-    const week = weeks[weekIndex];
-    const activity = await getActiveInstances(
-      getActivity,
-      week.from,
-      week.to,
-      weekIndex
-    );
-    weeklyActivity[weekIndex] = activity;
+const getActivityInRanges = async (getActivity, ranges) => {
+  const activityInRanges = [];
+  for (let rangeIndex in ranges) {
+    const range = ranges[rangeIndex];
+    const activity = await getActiveInstances(getActivity, range.from, range.to, rangeIndex);
+    activityInRanges[rangeIndex] = activity;
   }
-  return weeklyActivity;
+  return activityInRanges;
 };
 
-const getInstancesActiveInWeek = (weeklyEvaluations, activity) => {
-  return Object.keys(activity).reduce((active, instanceId) => {
-    if (weeklyEvaluations[instanceId]) {
-      return {
-        ...active,
-        [instanceId]: activity[instanceId]
-      };
+const getInstancesActiveInRange = (initialEventInRange, activity) => {
+  const activeInstances = new Map();
+  for (let [instanceId, instanceActivity] of activity) {
+    if (initialEventInRange.has(instanceId)) {
+      activeInstances.set(instanceId, instanceActivity);
     }
-    return active;
-  }, {});
+  }
+  return activeInstances;
 };
 
-const buildRetentionMatrix = ({ ranges, weeklyActivity, evaluations }) => {
-  return ranges.map((range, rangeIndex) => {
-    const weeklyEvaluations = evaluations[rangeIndex];
+const mapToObject = map => {
+  const obj = {};
+  for (let [k, v] of map) {
+    obj[k] = v;
+  }
+  return obj;
+};
 
-    const activity = Object.keys(weeklyActivity)
+const buildRetentionMatrix = ({ dateRanges, activityInRanges, groupedInitialEvents }) => {
+  return dateRanges.map((range, rangeIndex) => {
+    const initialEventInRange = groupedInitialEvents[rangeIndex];
+
+    const activity = Object.keys(activityInRanges)
       .filter(index => index >= rangeIndex)
       .map((index, i) => {
-        const activity = weeklyActivity[index];
-        const activeInstances = getInstancesActiveInWeek(
-          weeklyEvaluations,
-          activity
-        );
-        const activeCount = Object.keys(activeInstances).length;
-        const evalsCount = Object.keys(weeklyEvaluations).length;
+        const activity = activityInRanges[index];
+        const activeInstances = getInstancesActiveInRange(initialEventInRange, activity);
+        const activeCount = activeInstances.size;
+        const evalsCount = initialEventInRange.size;
         const percentage = Math.round((activeCount / evalsCount) * 100);
         return {
           activeCount,
           percentage,
-          activeInstances
+          activeInstances: mapToObject(activeInstances)
         };
       });
 
     return {
       range,
       activity,
-      evaluations: weeklyEvaluations
+      evaluations: mapToObject(initialEventInRange)
     };
   });
 };
 
-export const buildMatrix = async ({
-  startingDate = endOfDay(Date.now()),
-  numberOfWeeks,
-  getInitialEvents,
-  getActivity
-}) => {
-  const ranges = generateRanges(startingDate, numberOfWeeks);
-  const startingEvents = await getInitialEvents();
-  const evaluations = groupEvaluationsByWeek(startingEvents, ranges);
-  const weeklyActivity = await getWeeklyActivity(getActivity, ranges);
-  const matrix = buildRetentionMatrix({ ranges, evaluations, weeklyActivity });
+export const buildMatrix = async ({ dateRanges = generateRanges(), getInitialEvents, getActivity }) => {
+  const initialEvents = await getInitialEvents();
+  const groupedInitialEvents = groupInitialEventsByWeek(initialEvents, dateRanges);
+  const activityInRanges = await getActivityInRanges(getActivity, dateRanges);
+  const matrix = buildRetentionMatrix({ dateRanges, groupedInitialEvents, activityInRanges });
   return matrix;
 };

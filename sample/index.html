@@ -34,14 +34,15 @@
             eventC: (start, end, index) => fetch('./events-c.json').then(response => response.json()).then(result => result[index].ids),
         }
 
+        const dateRanges = Retention.generateRanges({ endingDate: new Date('2018-02-28T23:59:59.999Z') });
+
         Retention.buildMatrix({
-            numberOfWeeks: 4,
-            startingDate: new Date('2018-08-17T21:59:59.999Z'),
+            dateRanges,
             getInitialEvents,
             getActivity
         }).then(matrix => {
             Retention.renderChart({ matrix, container: document.getElementById('chart') });
-            Retention.renderTable({ matrix, container: document.getElementById('table') })
+            Retention.renderTable({ matrix, container: document.getElementById('table') });
         });
     </script>
 </body>

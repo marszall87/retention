@@ -10,14 +10,7 @@ const renderCell = ({ rangeIndex, rangeCount }, content) => {
   }}">${content}</td>`;
 };
 
-const renderCohortRow = ({
-  range,
-  rangeCount,
-  cohortIndex,
-  evaluations,
-  activity,
-  colorPattern
-}) => {
+const renderCohortRow = ({ range, rangeCount, cohortIndex, evaluations, activity, colorPattern }) => {
   const evaluationsCount = Object.keys(evaluations).length;
 
   return html`
@@ -32,42 +25,31 @@ const renderCohortRow = ({
               },
               evaluationsCount
             )}
-            ${activity.map(
-              ({ activeCount, activeInstances, percentage }, i) => {
-                const percentageLabel = percentage ? `${percentage}%` : '-';
-                const content = html`${activeCount}<small class="${
-                  style.subtext
-                }">${percentageLabel}</small>`;
-                return renderCell(
-                  {
-                    rangeCount,
-                    rangeIndex: i + 1
-                  },
-                  content
-                );
-              }
-            )}
+            ${activity.map(({ activeCount, activeInstances, percentage }, i) => {
+              const percentageLabel = percentage ? `${percentage}%` : '-';
+              const content = html`${activeCount}<small class="${style.subtext}">${percentageLabel}</small>`;
+              return renderCell(
+                {
+                  rangeCount,
+                  rangeIndex: i + 1
+                },
+                content
+              );
+            })}
         </tr>`;
 };
 
-const renderHeader = content =>
-  html`<th class="${style.header}">${content}</th>`;
+const renderHeader = content => html`<th class="${style.header}">${content}</th>`;
 
-export const renderTable = ({
-  container,
-  matrix,
-  colorPattern = defaultPattern
-}) => {
+export const renderTable = ({ container, matrix, rangeSuffix = 'week', colorPattern = defaultPattern }) => {
   const rangeCount = matrix.length;
   return container.appendChild(html`
         <table class="${style.table}">
             <thead>
                 <tr>
                     <th class="${style.header}">Cohort</th>
-                    <th class="${style.header}">Evals started</th>
-                    ${matrix.map((activity, index) =>
-                      renderHeader(`${ordinal(index + 1)} week`)
-                    )}
+                    <th class="${style.header}">Size</th>
+                    ${matrix.map((activity, index) => renderHeader(`${ordinal(index + 1)} ${rangeSuffix}`))}
                 </tr>
             </thead>
             ${matrix.map((cohort, cohortIndex) =>

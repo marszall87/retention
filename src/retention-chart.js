@@ -5,6 +5,7 @@ import { defaultPattern, formatDates } from './common';
 export const renderChart = ({
   container,
   matrix,
+  rangeSuffix = 'week',
   colorPattern = defaultPattern,
   options = {}
 }) => {
@@ -25,7 +26,7 @@ export const renderChart = ({
     axis: {
       x: {
         type: 'category',
-        categories: matrix.map((range, i) => `${ordinal(i + 1)} week`)
+        categories: matrix.map((range, i) => `${ordinal(i + 1)} ${rangeSuffix}`)
       },
       y: {
         padding: {

@@ -30,12 +30,11 @@ export const defaultPattern = [
 
 export const formatDateShort = date =>
   date.toLocaleString('pl-PL', {
+    timeZone: 'UTC',
     month: '2-digit',
     day: 'numeric'
   });
 
 export const formatDates = range => {
-  return `${formatDateShort(new Date(range.from))} - ${formatDateShort(
-    new Date(range.to)
-  )}`;
+  return `${formatDateShort(new Date(range.from))} - ${formatDateShort(new Date(range.to))}`;
 };
