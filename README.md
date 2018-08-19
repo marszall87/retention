@@ -19,7 +19,7 @@ import { buildMatrix, renderTable, renderChart } from 'retention';
 #### CommonJS
 
 ```js
-const { buildMatrix, renderTable, renderChart } = require('retention');
+const { buildMatrix } = require('retention');
 ```
 
 _Notice:_ Because CJS modules are almost always used in NodeJS backend code (Webpack or Rollup should automatically use UMD or ESM version), this version includes only `buildMatrix` function, no rendering functions. If you want those you should probably explicitly include the UMD version:
@@ -42,7 +42,7 @@ const { buildMatrix, renderTable, renderChart } = require('retention/dist/retent
 There's also a simple CSS file which adds some styling to the table:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/retention@latest/dist/retention.min.css"></script>
+<link href="https://cdn.jsdelivr.net/npm/retention@latest/dist/retention.min.css" rel="stylesheet" />
 ```
 
 ## Sample
@@ -57,7 +57,7 @@ npm run build
 npm run sample
 ```
 
-Navigate to `http://localhost:5000` and you should see a sample retention chart and table.
+Navigate to `http://localhost:5000/sample` and you should see a sample retention chart and table.
 
 ## API
 
