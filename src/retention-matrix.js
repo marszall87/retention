@@ -88,14 +88,6 @@ const getInstancesActiveInRange = (initialEventInRange, activity) => {
   return activeInstances;
 };
 
-const mapToObject = map => {
-  const obj = {};
-  for (let [k, v] of map) {
-    obj[k] = v;
-  }
-  return obj;
-};
-
 const buildRetentionMatrix = ({ dateRanges, activityInRanges, groupedInitialEvents }) => {
   return dateRanges.map((range, rangeIndex) => {
     const initialEventInRange = groupedInitialEvents[rangeIndex];
@@ -111,14 +103,14 @@ const buildRetentionMatrix = ({ dateRanges, activityInRanges, groupedInitialEven
         return {
           activeCount,
           percentage,
-          activeInstances: mapToObject(activeInstances)
+          active: [...activeInstances].map(([k, v]) => ({ id: k, events: v }))
         };
       });
 
     return {
       range,
       activity,
-      evaluations: mapToObject(initialEventInRange)
+      cohort: [...initialEventInRange.entries()].map(([k, v]) => ({ id: k, date: v }))
     };
   });
 };

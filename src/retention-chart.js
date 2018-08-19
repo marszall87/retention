@@ -11,7 +11,7 @@ export const renderChart = ({
 }) => {
   const columns = [...matrix].reverse().map((cohort, index) => {
     const label = formatDates(cohort.range);
-    if (Object.keys(cohort.evaluations).length === 0) {
+    if (cohort.cohort.length === 0) {
       return [label];
     }
     const values = cohort.activity.map(({ percentage }) => percentage);

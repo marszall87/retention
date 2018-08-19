@@ -10,8 +10,8 @@ const renderCell = ({ rangeIndex, rangeCount }, content) => {
   }}">${content}</td>`;
 };
 
-const renderCohortRow = ({ range, rangeCount, cohortIndex, evaluations, activity, colorPattern }) => {
-  const evaluationsCount = Object.keys(evaluations).length;
+const renderCohortRow = ({ range, rangeCount, cohortIndex, cohort, activity, colorPattern }) => {
+  const evaluationsCount = cohort.length;
 
   return html`
         <tr class="${style.row}" style=${{
@@ -57,7 +57,7 @@ export const renderTable = ({ container, matrix, rangeSuffix = 'week', colorPatt
                 cohortIndex,
                 rangeCount,
                 range: cohort.range,
-                evaluations: cohort.evaluations,
+                cohort: cohort.cohort,
                 activity: cohort.activity,
                 colorPattern
               })
