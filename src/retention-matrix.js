@@ -12,7 +12,7 @@ const endOfDay = date => {
   return endOfDay;
 };
 
-export const generateRanges = ({ endingDate = endOfDay(Date.now()), daysInRange = 7, rangeCount = 4 }) =>
+export const generateRanges = ({ endingDate = endOfDay(Date.now()), daysInRange = 7, rangeCount = 4 } = {}) =>
   Array.from({ length: rangeCount }, (v, i) => {
     const from = addMilliseconds(subDays(endingDate, daysInRange * (rangeCount - i)), 1);
     const to = subDays(endingDate, daysInRange * (rangeCount - i - 1));
